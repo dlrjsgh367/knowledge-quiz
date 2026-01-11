@@ -1,10 +1,11 @@
 import { useState, useEffect } from 'react';
-import { Home } from './components/Home';
-import { Auth } from './components/Auth';
-import { QuizSelection } from './components/QuizSelection';
-import { QuizPlay } from './components/QuizPlay';
-import { QuizResult } from './components/QuizResult';
-import { MyPage } from './components/MyPage';
+import { Home } from './pages/Home';
+import { Auth } from './features/auth/components/Auth';
+import { QuizSelection } from './features/quiz/components/QuizSelection';
+import { QuizPlay } from './features/quiz/components/QuizPlay';
+import { QuizResult } from './features/result/components/QuizResult';
+import { MyPage } from './features/mypage/components/MyPage';
+import { AuthProvider } from './shared/contexts/AuthContext';
 
 export type Screen = 'home' | 'auth' | 'quiz-selection' | 'quiz-play' | 'quiz-result' | 'mypage';
 
@@ -159,8 +160,10 @@ export default function App() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-50 to-blue-50">
-      {renderScreen()}
-    </div>
+    <AuthProvider>
+      <div className="min-h-screen bg-gradient-to-br from-purple-50 to-blue-50">
+        {renderScreen()}
+      </div>
+    </AuthProvider>
   );
 }

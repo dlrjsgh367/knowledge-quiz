@@ -1,6 +1,8 @@
 import { useState } from 'react';
 import { User } from '../App';
 import { ArrowLeft, Mail, Lock, UserIcon } from 'lucide-react';
+import { authApi } from '../api/authApi';
+import { useAuth } from '@/shared/contexts/AuthContext';
 
 interface AuthProps {
   onLogin: (user: User) => void;
@@ -13,44 +15,75 @@ export function Auth({ onLogin, onBack }: AuthProps) {
   const [password, setPassword] = useState('');
   const [username, setUsername] = useState('');
   const [error, setError] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+  const { login: authLogin } = useAuth();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
+    setIsLoading(true);
 
-    if (isLogin) {
-      // Login logic
-      if (!email || !password) {
-        setError('모든 필드를 입력해주세요');
-        return;
+    try {
+      if (isLogin) {
+        // 로그인 로직
+        if (!email || !password) {
+          setError('모든 필드를 입력해주세요');
+          return;
+        }
+
+        const response = await authApi.login({ email, password });
+        const { accessToken, ...userData } = response.data;
+
+        // Context에 사용자 정보 저장
+        authLogin(accessToken, userData);
+
+        // 부모 컴포넌트에 알림
+        const user: User = {
+          id: userData.id.toString(),
+          username: userData.username,
+          email: userData.email,
+        };
+        onLogin(user);
+      } else {
+        // 회원가입 로직
+        if (!email || !password || !username) {
+          setError('모든 필드를 입력해주세요');
+          return;
+        }
+
+        if (password.length < 6) {
+          setError('비밀번호는 6자 이상이어야 합니다');
+          return;
+        }
+
+        // 회원가입 API 호출
+        const signupResponse = await authApi.signup({
+          email,
+          password,
+          username,
+        });
+
+        // 회원가입 성공 후 자동 로그인
+        const loginResponse = await authApi.login({ email, password });
+        const { accessToken, ...userData } = loginResponse.data;
+
+        // Context에 사용자 정보 저장
+        authLogin(accessToken, userData);
+
+        // 부모 컴포넌트에 알림
+        const user: User = {
+          id: userData.id.toString(),
+          username: userData.username,
+          email: userData.email,
+        };
+        onLogin(user);
       }
-
-      // Mock login
-      const user: User = {
-        id: Date.now().toString(),
-        username: email.split('@')[0],
-        email
-      };
-      onLogin(user);
-    } else {
-      // Signup logic
-      if (!email || !password || !username) {
-        setError('모든 필드를 입력해주세요');
-        return;
-      }
-
-      if (password.length < 6) {
-        setError('비밀번호는 6자 이상이어야 합니다');
-        return;
-      }
-
-      // Mock signup
-      const user: User = {
-        id: Date.now().toString(),
-        username,
-        email
-      };
-      onLogin(user);
+    } catch (err: any) {
+      // 에러 처리
+      const errorMessage = err.response?.data?.message || err.message || '요청 중 오류가 발생했습니다.';
+      setError(errorMessage);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -137,9 +170,20 @@ export function Auth({ onLogin, onBack }: AuthProps) {
 
             <button
               type="submit"
-              className="w-full py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors font-semibold"
+              disabled={isLoading}
+              className="w-full py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors font-semibold disabled:bg-purple-400 disabled:cursor-not-allowed"
             >
-              {isLogin ? '로그인' : '회원가입'}
+              {isLoading ? (
+                <span className="flex items-center justify-center gap-2">
+                  <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                  </svg>
+                  처리 중...
+                </span>
+              ) : (
+                isLogin ? '로그인' : '회원가입'
+              )}
             </button>
           </form>
 
