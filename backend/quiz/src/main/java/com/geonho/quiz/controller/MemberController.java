@@ -1,10 +1,10 @@
-package com.geonho.quiz.domain.member.api;
+package com.geonho.quiz.controller;
 
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-public class MemberEndpoint {
+public class MemberController {
 
     @GetMapping("/")
     public String home() {

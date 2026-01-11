@@ -1,4 +1,4 @@
-package com.geonho.quiz.domain.quiz.entity;
+package com.geonho.quiz.domain;
 
 import com.geonho.quiz.global.entity.BaseEntity;
 import jakarta.persistence.CascadeType;

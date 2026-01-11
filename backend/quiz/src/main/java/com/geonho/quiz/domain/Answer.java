@@ -1,7 +1,5 @@
-package com.geonho.quiz.domain.attempt.entity;
+package com.geonho.quiz.domain;
 
-import com.geonho.quiz.domain.quiz.entity.Question;
-import com.geonho.quiz.domain.quiz.entity.QuestionOption;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;

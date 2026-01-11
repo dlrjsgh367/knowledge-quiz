@@ -1,4 +1,4 @@
-package com.geonho.quiz.domain.member.entity;
+package com.geonho.quiz.domain;
 
 public enum MemberStatus {
     ACTIVE, INACTIVE, BANNED

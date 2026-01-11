@@ -1,4 +1,4 @@
-package com.geonho.quiz.domain.quiz.entity;
+package com.geonho.quiz.domain;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;

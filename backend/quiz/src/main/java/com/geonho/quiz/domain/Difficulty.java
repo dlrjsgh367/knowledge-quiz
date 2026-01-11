@@ -1,4 +1,4 @@
-package com.geonho.quiz.domain.quiz.entity;
+package com.geonho.quiz.domain;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
