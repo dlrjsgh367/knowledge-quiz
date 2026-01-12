@@ -5,26 +5,32 @@ import com.geonho.quiz.dto.request.SignupRequest;
 import com.geonho.quiz.dto.response.SignupResponse;
 import com.geonho.quiz.repository.MemberRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
-@Transactional(readOnly = true)
 public class MemberService {
 
     private final MemberRepository memberRepository;
     private final PasswordEncoder passwordEncoder;
 
+    @Transactional
     public SignupResponse signup(SignupRequest signupRequest) {
+        log.debug("회원가입 시도 - email: {}, username: {}", signupRequest.getEmail(), signupRequest.getUsername());
+
         // 이메일 중복 체크
         if (memberRepository.existsByEmail(signupRequest.getEmail())) {
+            log.warn("회원가입 실패 - 중복된 이메일: {}", signupRequest.getEmail());
             throw new IllegalArgumentException("이미 사용 중인 이메일입니다.");
         }
 
         // 비밀번호 암호화
         String encodedPassword = passwordEncoder.encode(signupRequest.getPassword());
+        log.debug("비밀번호 암호화 완료");
 
         // Member 엔티티 생성
         Member member = Member.builder()
@@ -35,6 +41,7 @@ public class MemberService {
 
         // DB 저장
         Member savedMember = memberRepository.save(member);
+        log.info("회원가입 성공 - memberId: {}, email: {}", savedMember.getId(), savedMember.getEmail());
 
         return SignupResponse.from(savedMember);
     }

@@ -583,6 +583,217 @@ export const useQuiz = (quizId) => {
 
 ---
 
+## React 웹앱 플로우
+
+### 기본 개념
+
+리액트는 **컴포넌트** 기반 라이브러리입니다. 웹 페이지를 여러 개의 독립적인 조각(컴포넌트)으로 나누어 관리합니다.
+
+```
+웹 페이지 = 여러 컴포넌트의 조합
+
+예시:
+┌─────────────────────────────┐
+│      Header 컴포넌트         │
+├─────────────────────────────┤
+│    Content 컴포넌트          │
+├─────────────────────────────┤
+│      Footer 컴포넌트         │
+└─────────────────────────────┘
+```
+
+### 실행 흐름
+
+#### 1. 시작점: `main.tsx`
+```tsx
+// frontend/src/main.tsx
+import App from './App'
+
+ReactDOM.createRoot(document.getElementById('root')!).render(
+  <App />
+)
+```
+**역할:** 웹 브라우저에 리액트 앱을 연결
+
+#### 2. 중심: `App.tsx`
+```tsx
+export default function App() {
+  const [currentScreen, setCurrentScreen] = useState('home');
+
+  return (
+    <AuthProvider>
+      <div className="min-h-screen">
+        {currentScreen === 'home' && <Home />}
+        {currentScreen === 'auth' && <Auth />}
+        {currentScreen === 'quiz' && <Quiz />}
+      </div>
+    </AuthProvider>
+  );
+}
+```
+**역할:** 화면 전환 관리, 전역 상태 제공
+
+#### 3. 컴포넌트 구조
+```
+App.tsx (중앙 관리자)
+├── AuthProvider (전역 인증 상태)
+│   ├── Home.tsx (홈 화면)
+│   ├── Auth.tsx (로그인/회원가입)
+│   │   └── authApi.ts (API 호출)
+│   ├── QuizSelection.tsx (퀴즈 선택)
+│   └── QuizPlay.tsx (퀴즈 풀기)
+```
+
+### 핵심 개념
+
+#### State (상태): 컴포넌트의 데이터
+```tsx
+const [email, setEmail] = useState('');
+//     ↑        ↑            ↑
+//   현재값   변경함수      초기값
+
+// 사용 예시
+<input
+  value={email}
+  onChange={(e) => setEmail(e.target.value)}
+/>
+```
+
+#### Props: 부모 → 자식 데이터 전달
+```tsx
+// 부모 컴포넌트
+<Auth onLogin={handleLogin} />
+
+// 자식 컴포넌트
+function Auth({ onLogin }) {
+  return <button onClick={onLogin}>로그인</button>
+}
+```
+
+#### Context: 전역 상태 공유
+```tsx
+// AuthContext.tsx
+export const AuthProvider = ({ children }) => {
+  const [user, setUser] = useState(null);
+  return (
+    <AuthContext.Provider value={{ user, setUser }}>
+      {children}
+    </AuthContext.Provider>
+  );
+};
+
+// 어디서든 사용
+function Home() {
+  const { user } = useAuth();
+  return <div>환영합니다, {user.username}님!</div>;
+}
+```
+
+### 데이터 흐름 예시: 회원가입
+
+```
+1. 사용자 입력
+   ↓
+2. Auth.tsx의 state에 저장
+   const [email, setEmail] = useState('')
+   ↓
+3. "회원가입" 버튼 클릭
+   handleSubmit() 실행
+   ↓
+4. API 호출
+   authApi.signup({ email, password, username })
+
+   프론트: localhost:5174/api/member/signup
+   → Vite 프록시
+   → 백엔드: localhost:8081/api/member/signup
+   ↓
+5. 백엔드 응답
+   { id: 1, email: "...", token: "..." }
+   ↓
+6. 토큰 저장
+   localStorage.setItem('accessToken', token)
+   AuthContext에 사용자 정보 저장
+   ↓
+7. 화면 전환
+   setCurrentScreen('home')
+   → Home.tsx 렌더링
+```
+
+### API 통신 구조
+
+#### 1. API 클라이언트 설정
+```tsx
+// api/client.ts
+const client = axios.create({
+  baseURL: '/api',
+  timeout: 10000,
+});
+
+// 요청 인터셉터 (토큰 자동 추가)
+client.interceptors.request.use((config) => {
+  const token = localStorage.getItem('accessToken');
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+  return config;
+});
+```
+
+#### 2. Feature별 API 정의
+```tsx
+// features/auth/api/authApi.ts
+export const authApi = {
+  signup: (data: SignupRequest) =>
+    client.post<AuthResponse>('/member/signup', data),
+
+  login: (data: LoginRequest) =>
+    client.post<LoginResponse>('/auth/login', data),
+};
+```
+
+#### 3. 컴포넌트에서 사용
+```tsx
+// features/auth/components/Auth.tsx
+const handleSubmit = async (e) => {
+  try {
+    const response = await authApi.signup({
+      email,
+      password,
+      username,
+    });
+
+    // 성공 처리
+    authLogin(response.data.accessToken, response.data);
+    onLogin(user);
+  } catch (err) {
+    setError(err.message);
+  }
+};
+```
+
+### Vite 프록시 설정
+
+```typescript
+// vite.config.ts
+export default defineConfig({
+  server: {
+    proxy: {
+      '/api': {
+        target: 'http://localhost:8081',
+        changeOrigin: true,
+      }
+    }
+  }
+});
+```
+
+**동작:**
+- 프론트엔드: `/api/member/signup` 요청
+- Vite 프록시: `http://localhost:8081/api/member/signup`으로 전달
+- CORS 문제 해결
+
+---
+
 ## 학습 목표
 
 ### 기술적 목표
