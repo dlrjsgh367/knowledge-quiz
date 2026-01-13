@@ -1,0 +1,38 @@
+server:
+  port: 8081
+
+spring:
+  application:
+    name: quiz
+  datasource:
+    url: jdbc:mysql://localhost:3306/home_db
+    username: user
+    password: qwer1234!@
+  jpa:
+    hibernate:
+      ddl-auto: none
+    properties:
+      hibernate:
+        show_sql: true # sql 로깅
+        generate_statistics: true # 쿼리수행 통계
+        format_sql: true # SQL문 정렬하여 출력
+        highlight_sql: true # SQL문 색 부여
+
+# Config 설정
+decorator:
+  datasource:
+    p6spy:
+      enable-logging: true
+
+logging:
+  level:
+    com.zaxxer.hikari: DEBUG
+    org.springframework.web: DEBUG
+    org.hibernate.SQL: DEBUG
+    root: info
+    com.restApi.restApiSpringBootApp: DEBUG
+    org.springframework: WARN
+    hibernate:
+      orm:
+        jdbc:
+          bind: TRACE # jdbc bind value 로깅 처리
