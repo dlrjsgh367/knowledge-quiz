@@ -28,7 +28,7 @@ export interface LoginResponse extends AuthResponse {
 export const authApi = {
   // 회원가입
   signup: (data: SignupRequest) =>
-    client.post<AuthResponse>('/member/signup', data),
+    client.post<AuthResponse>('/auth/signup', data),
 
   // 로그인
   login: (data: LoginRequest) =>

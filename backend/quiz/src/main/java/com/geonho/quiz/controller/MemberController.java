@@ -21,14 +21,4 @@ import org.springframework.web.bind.annotation.RestController;
 public class MemberController {
 
     private final MemberService memberService;
-
-    @PostMapping("/signup")
-    public ResponseEntity<SignupResponse> signup(
-        @Validated @RequestBody SignupRequest request
-    ) {
-        log.info("POST /api/member/signup - email: {}", request.getEmail());
-        SignupResponse signupResponse = memberService.signup(request);
-        log.info("회원가입 API 성공 - memberId: {}", signupResponse.getId());
-        return ResponseEntity.status(HttpStatus.CREATED).body(signupResponse);
-    }
 }

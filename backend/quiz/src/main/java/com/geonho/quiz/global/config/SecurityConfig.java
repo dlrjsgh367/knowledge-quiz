@@ -18,7 +18,7 @@ public class SecurityConfig {
         http
             .csrf(AbstractHttpConfigurer::disable) // REST API이므로 CSRF 비활성화
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/api/member/signup").permitAll() // 회원가입은 인증 없이 접근 가능
+                .requestMatchers("/api/auth/**").permitAll() // 인증 관련 엔드포인트는 인증 없이 접근 가능
                 .anyRequest().authenticated() // 나머지는 인증 필요
             );
 
