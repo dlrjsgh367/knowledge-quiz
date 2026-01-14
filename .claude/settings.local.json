@@ -2,7 +2,8 @@
   "permissions": {
     "allow": [
       "Bash(git mv:*)",
-      "Bash(find:*)"
+      "Bash(find:*)",
+      "Bash(\"C:/Users/user/workspace/2026/home/knowledge-quiz/backend/quiz/gradlew.bat\" build -x test --quiet -p \"C:/Users/user/workspace/2026/home/knowledge-quiz/backend/quiz\")"
     ]
   }
 }

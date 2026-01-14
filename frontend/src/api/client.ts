@@ -26,6 +26,10 @@ client.interceptors.request.use(
 // 응답 인터셉터
 client.interceptors.response.use(
   (response) => {
+    // 공통 응답 구조에서 result 추출
+    if (response.data && 'result' in response.data) {
+      response.data = response.data.result;
+    }
     return response;
   },
   (error) => {
