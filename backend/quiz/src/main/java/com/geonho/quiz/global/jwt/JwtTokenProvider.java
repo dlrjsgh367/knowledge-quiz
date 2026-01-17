@@ -8,6 +8,7 @@ import javax.crypto.SecretKey;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
+// todo: 여기 전체적으로 뭐하는 곳인지 확인
 @Component
 public class JwtTokenProvider {
 
