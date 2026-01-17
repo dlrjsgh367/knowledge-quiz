@@ -20,7 +20,7 @@ spring:
   jpa:
     defer-datasource-initialization: true  # JPA 초기화 후 data.sql 실행
     hibernate:
-      ddl-auto: none
+      ddl-auto: update
     properties:
       hibernate:
         show_sql: true # sql 로깅

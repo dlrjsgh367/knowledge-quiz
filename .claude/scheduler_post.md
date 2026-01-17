@@ -148,7 +148,70 @@ public void oneTimeTask() {
 
 ### 실제 프로젝트 적용 예시
 
-실제 프로젝트에 적용하고 작성 예정입니다.
+제 개인 프로젝트 **Knowledge Quiz**(상식 퀴즈 앱)에 DB 헬스 체크 스케줄러를 적용해봤습니다.
+
+#### 1. Application 클래스에 @EnableScheduling 추가
+
+```java
+@EnableJpaAuditing
+@EnableScheduling  // 스케줄러 활성화
+@SpringBootApplication
+public class QuizApplication {
+    public static void main(String[] args) {
+        SpringApplication.run(QuizApplication.class, args);
+    }
+}
+```
+
+#### 2. DB 헬스 체크 스케줄러 구현
+
+```java
+@Component
+@Slf4j
+@RequiredArgsConstructor
+public class DatabaseHealthCheckScheduler {
+
+    private final DataSource dataSource;
+
+    @Scheduled(fixedDelay = 30 * 1000)  // 이전 작업 완료 후 30초 뒤 실행
+    public void checkDatabaseConnection() {
+        try (Connection connection = dataSource.getConnection()) {
+            if (connection.isValid(1)) {  // 1초 내 응답 확인
+                log.info("DB 연결 정상 - {}", LocalDateTime.now());
+            }
+        } catch (Exception e) {
+            log.error("DB 연결 실패 - {}", e.getMessage());
+        }
+    }
+}
+```
+
+#### 왜 fixedDelay를 선택했나?
+
+`fixedRate` 대신 `fixedDelay`를 선택한 이유가 있습니다.
+
+- **fixedRate**: DB 연결 확인이 오래 걸리면 작업이 중첩될 수 있음
+- **fixedDelay**: 이전 체크가 완료된 후 30초를 기다리므로 안전
+
+네트워크 지연이나 DB 부하로 연결 확인이 늦어지는 경우를 고려하면 `fixedDelay`가 더 안정적입니다.
+
+#### 실행 결과
+
+```
+2026-01-17 14:30:00.123  INFO  - DB 연결 정상 - 2026-01-17T14:30:00.123
+2026-01-17 14:30:30.456  INFO  - DB 연결 정상 - 2026-01-17T14:30:30.456
+2026-01-17 14:31:00.789  INFO  - DB 연결 정상 - 2026-01-17T14:31:00.789
+```
+
+30초마다 로그가 찍히는 것을 확인할 수 있습니다.
+
+#### 확장 아이디어
+
+이 스케줄러를 더 발전시킬 수 있습니다:
+
+1. **Slack/Discord 알림**: DB 연결 실패 시 개발자에게 알림 전송
+2. **연속 실패 카운트**: N번 연속 실패 시에만 알림 (일시적 오류 필터링)
+3. **모니터링 연동**: Prometheus/Grafana와 연동하여 대시보드에 표시
 
 ---
 
