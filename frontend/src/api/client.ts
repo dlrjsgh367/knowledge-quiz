@@ -1,4 +1,4 @@
-import axios from 'axios';
+import axios from 'axios'
 
 const client = axios.create({
   baseURL: '/api',
@@ -6,40 +6,39 @@ const client = axios.create({
   headers: {
     'Content-Type': 'application/json',
   },
-});
+})
 
-// 요청 인터셉터
+// Request interceptor
 client.interceptors.request.use(
   (config) => {
-    // 토큰이 있으면 헤더에 추가
-    const token = localStorage.getItem('accessToken');
+    const token = localStorage.getItem('accessToken')
     if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
+      config.headers.Authorization = `Bearer ${token}`
     }
-    return config;
+    return config
   },
   (error) => {
-    return Promise.reject(error);
+    return Promise.reject(error)
   }
-);
+)
 
-// 응답 인터셉터
+// Response interceptor
 client.interceptors.response.use(
   (response) => {
-    // 공통 응답 구조에서 result 추출
+    // Extract result from common response structure
     if (response.data && 'result' in response.data) {
-      response.data = response.data.result;
+      response.data = response.data.result
     }
-    return response;
+    return response
   },
   (error) => {
-    // 401 에러 처리 (인증 실패)
+    // Handle 401 error (authentication failure)
     if (error.response?.status === 401) {
-      localStorage.removeItem('accessToken');
-      window.location.href = '/login';
+      localStorage.removeItem('accessToken')
+      window.location.href = '/'
     }
-    return Promise.reject(error);
+    return Promise.reject(error)
   }
-);
+)
 
-export default client;
+export default client
